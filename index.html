@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#4f46e5">
   <title>Zirkeltraining</title>
-  <!-- Manifest (als Data-URL – hier kann man bei Bedarf auch eine separate Datei nutzen) -->
+  <!-- Manifest (als Data-URL – alternativ kann hier auch eine separate Datei verwendet werden) -->
   <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiWmlya2VsdHJhaW5pbmciLCJzaG9ydF9uYW1lIjoiWmlya2VsIiwiZGVzY3JpcHRpb24iOiJQaXplZCBLaXR0ZXItWppya2VsdHJhaW5pbmciLCJkaXNwbGF5IjoiYXBwIiwgImJhY2tncm91bmRfY29sb3IiOiIjZmZmZmZmIiwidGhlbWVfY29sb3IiOiIjNGY0NmU1Iiwic3RhcnRfdXJsIjoiLyJ9">
   <style>
     /* Reset und Grundlayout */
@@ -58,9 +58,9 @@
       font-size: 1rem;
       font-weight: 600;
       color: #374151;
-    }
-    .round svg, .highscore svg {
-      margin-left: 0.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
     }
     .wake-lock-icon {
       width: 16px;
@@ -92,18 +92,8 @@
       background-color: #fef3c7;
       transition: background-color 0.3s ease;
     }
-    .exercise-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: currentColor;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
     .exercise-card.prepare {
+      /* Dezentes Pulsieren während der Vorbereitungsphase */
       animation: pulse 2s infinite;
     }
     @keyframes pulse {
@@ -116,7 +106,6 @@
       justify-content: space-between;
       align-items: flex-start;
       margin-bottom: 1rem;
-      position: relative;
     }
     .exercise-title {
       font-size: 1.25rem;
@@ -131,7 +120,6 @@
     .timer {
       text-align: center;
       margin-bottom: 1rem;
-      position: relative;
     }
     .time {
       font-size: 3.5rem;
@@ -143,12 +131,7 @@
     }
     .time.warning {
       color: #dc2626;
-      animation: shake 0.5s ease-in-out;
-    }
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      25% { transform: translateX(-4px); }
-      75% { transform: translateX(4px); }
+      /* Sanfter Farbwechsel statt kräftigem Shake */
     }
     .phase {
       font-size: 1rem;
@@ -234,13 +217,7 @@
       stroke-linecap: round;
       stroke-linejoin: round;
     }
-    .phase-transition {
-      animation: fadeInOut 0.5s ease-in-out;
-    }
-    @keyframes fadeInOut {
-      0% { opacity: 0; transform: scale(0.95); }
-      100% { opacity: 1; transform: scale(1); }
-    }
+    /* Install-Button */
     #installButton {
       display: none;
       position: fixed;
@@ -265,12 +242,17 @@
 </head>
 <body>
   <div class="app">
-    <!-- Die Fortschrittsanzeige wird nun auch in der Breite animiert -->
+    <!-- Fortschrittsleiste -->
     <div id="progressBar" class="progress-bar"></div>
     <div class="container">
       <div class="header">
         <div class="header-left">
-          <div class="round">Runde <span id="roundCounter">1</span></div>
+          <div class="round">
+            Runde <span id="roundCounter">1</span>
+            <svg class="wake-lock-icon" viewBox="0 0 24 24">
+              <path d="M12 6v12M6 12h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
           <div class="highscore">Highscore: <span id="highscoreDisplay">0</span></div>
         </div>
         <button class="sound-toggle" id="soundToggle" title="Sound an/aus">
@@ -322,12 +304,14 @@
 
   <!-- SVG Icons -->
   <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+    <!-- Play Icon -->
     <symbol id="icon-play" viewBox="0 0 24 24">
       <polygon points="5 3 19 12 5 21 5 3"/>
     </symbol>
+    <!-- Pause Icon: zwei Balken mit mehr Abstand -->
     <symbol id="icon-pause" viewBox="0 0 24 24">
-      <rect x="6" y="4" width="4" height="16"/>
-      <rect x="14" y="4" width="4" height="16"/>
+      <rect x="5" y="4" width="4" height="16"/>
+      <rect x="15" y="4" width="4" height="16"/>
     </symbol>
     <symbol id="icon-rotate-ccw" viewBox="0 0 24 24">
       <path d="M1 4v6h6"/>
@@ -343,8 +327,11 @@
       <line x1="23" y1="9" x2="17" y2="15"/>
       <line x1="17" y1="9" x2="23" y2="15"/>
     </symbol>
+    <!-- Überarbeitetes Dumbbell-Icon -->
     <symbol id="icon-dumbbell" viewBox="0 0 24 24">
-      <path d="M6 5v14M18 5v14M6 9H4a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h2M18 9h2a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-2"/>
+      <rect x="9" y="10" width="6" height="4" rx="1" fill="none" stroke="currentColor" stroke-width="2"/>
+      <circle cx="7" cy="12" r="2" fill="none" stroke="currentColor" stroke-width="2"/>
+      <circle cx="17" cy="12" r="2" fill="none" stroke="currentColor" stroke-width="2"/>
     </symbol>
     <symbol id="icon-heart" viewBox="0 0 24 24">
       <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
@@ -403,8 +390,8 @@
         instructions: [
           "Im Stehen abwechselnd die Knie so hoch wie möglich heben.",
           "Arme mitschwingen lassen.",
-          "Ruhig atmen und das Tempo zügig beibehalten.",
-          "Auf eine saubere Technik achten."
+          "Ruhig atmen und zügig durchstarten.",
+          "Auf saubere Technik achten."
         ]
       },
       {
@@ -415,10 +402,10 @@
         equipment: "Keine",
         target: "Brust, Arme & Core",
         instructions: [
-          "Hände schulterbreit auf dem Boden platzieren.",
+          "Hände schulterbreit auf den Boden legen.",
           "Körper in einer geraden Linie halten.",
-          "Langsam absenken, bis die Brust fast den Boden berührt.",
-          "Wieder hochdrücken; bei Bedarf die Knie am Boden lassen."
+          "Langsam absenken, bis fast die Brust den Boden berührt.",
+          "Wieder hochdrücken; bei Bedarf auf den Knien starten."
         ]
       },
       {
@@ -431,8 +418,8 @@
         instructions: [
           "In Liegestützposition starten.",
           "Abwechselnd die Knie schnell zur Brust ziehen.",
-          "Das Tempo gleichmäßig hochhalten.",
-          "Bauch fest anspannen, um den Rücken zu schützen."
+          "Tempo gleichmäßig hochhalten.",
+          "Bauch anspannen, um den Rücken zu schützen."
         ]
       },
       {
@@ -445,8 +432,8 @@
         instructions: [
           "Aus dem Stand in die Hocke gehen und in die Liegestützposition springen.",
           "Optional einen Liegestütz ausführen.",
-          "Zurück in die Hocke springen und dann explosiv hochspringen.",
-          "Ruhig atmen und in einem gleichmäßigen Rhythmus weitermachen."
+          "Zurück in die Hocke springen und explosiv hochkommen.",
+          "Ruhig atmen und im Rhythmus weitermachen."
         ]
       },
       {
@@ -460,7 +447,7 @@
           "Startposition: Füße zusammen, Arme an den Seiten.",
           "Beim Sprung Beine spreizen und Arme über den Kopf führen.",
           "Wieder in die Ausgangsposition springen.",
-          "In einem gleichmäßigen Rhythmus fortfahren."
+          "Rhythmisch weitermachen."
         ]
       }
     ];
@@ -470,7 +457,7 @@
         this.currentExercise = 0;
         this.rounds = 0;
         this.isActive = false;
-        // Phase „prepare“ dauert immer 10 Sekunden
+        // Vorbereitungsphase dauert 10 Sekunden
         this.prepareTime = 10;
         this.timeLeft = this.prepareTime;
         this.phase = 'prepare'; // 'prepare' oder 'exercise'
@@ -509,7 +496,7 @@
         this.updateDisplay();
       }
 
-      // Wake-Lock, damit der Bildschirm nicht dunkel wird
+      // Wake-Lock, damit der Bildschirm anbleibt (sofern unterstützt)
       async initWakeLock() {
         if ('wakeLock' in navigator) {
           try {
@@ -531,6 +518,9 @@
         if (!this.audioContext) {
           this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
         }
+        if (this.audioContext.state === "suspended") {
+          this.audioContext.resume();
+        }
         return this.audioContext;
       }
       playBeep(frequency = 440, duration = 200, volume = 0.1) {
@@ -545,7 +535,7 @@
           gainNode.gain.linearRampToValueAtTime(volume, audioContext.currentTime + 0.01);
           gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + duration / 1000);
           oscillator.frequency.value = frequency;
-          oscillator.type = 'sine';
+          oscillator.type = 'square'; // Deutlich hörbarer Ton
           oscillator.start(audioContext.currentTime);
           oscillator.stop(audioContext.currentTime + duration / 1000 + 0.01);
         } catch (error) {
@@ -576,7 +566,7 @@
           this.phase === 'prepare' ? '#fef3c7' :
           exercise.type === 'kraft' ? '#eff6ff' : '#fef2f2';
 
-        // Fortschrittsanzeige: Fülle die Leiste entsprechend der verbleibenden Zeit
+        // Fortschrittsanzeige
         const totalTime = this.phase === 'prepare' ? this.prepareTime : exercise.duration;
         const progressPercent = (this.timeLeft / totalTime) * 100;
         this.elements.progressBar.style.width = progressPercent + "%";
@@ -586,64 +576,47 @@
         this.elements.exerciseTarget.textContent = exercise.target;
         this.elements.timeDisplay.textContent = this.formatTime(this.timeLeft);
         this.elements.phaseDisplay.textContent = this.phase === 'prepare' ? 'Vorbereitung' : 'Übung';
-        // Zeige auch den Typ und die Dauer als kleine Info:
         this.elements.exerciseType.textContent =
           this.phase === 'prepare'
             ? `10s Vorbereitung`
             : (exercise.type === 'kraft' ? `${exercise.duration}s Kraft` : `${exercise.duration}s Cardio`);
 
-        // Icon: Kraftübungen erhalten den Hantel- (dumbbell) Icon, Cardio den Herz-Icon
         this.elements.exerciseIcon.innerHTML = `
           <svg class="icon" style="color: ${exercise.type === 'kraft' ? '#3b82f6' : '#ef4444'}">
             <use href="#icon-${exercise.icon}"/>
           </svg>
         `;
-
-        // Anweisungen
         this.elements.instructions.innerHTML = exercise.instructions
           .map(ins => `<div class="instruction">${ins}</div>`)
           .join('');
 
-        // Button-Text und Icon anpassen
         this.elements.buttonText.textContent = this.isActive ? 'Pause' : 'Start';
         this.elements.playIcon.setAttribute('href',
           this.isActive ? '#icon-pause' : '#icon-play');
         this.elements.startButton.style.backgroundColor = this.isActive ? '#eab308' : '#22c55e';
 
-        // Übergangsanimation für die Karte
-        this.elements.exerciseCard.classList.add('phase-transition');
-        setTimeout(() => {
-          this.elements.exerciseCard.classList.remove('phase-transition');
-        }, 500);
-
-        // Zeitwarnung (bei wenigen Sekunden blinkt die Zeit rot)
         if (this.timeLeft <= 3 && this.timeLeft > 0) {
           this.elements.timeDisplay.classList.add('warning');
         } else {
           this.elements.timeDisplay.classList.remove('warning');
         }
 
-        // Bei Vorbereitung etwas pulsieren lassen
         if (this.phase === 'prepare') {
           this.elements.exerciseCard.classList.add('prepare');
         } else {
           this.elements.exerciseCard.classList.remove('prepare');
         }
       }
-      // Nach Ablauf der Zeit: Phase wechseln und ggf. Runde abschließen
       nextPhase() {
         if (this.phase === 'prepare') {
-          // Wechsel zu Übung: Zeit entsprechend der Übungsdauer setzen
           this.phase = 'exercise';
           this.timeLeft = exercises[this.currentExercise].duration;
           this.playBeep(660, 200, 0.1);
         } else {
-          // Übung beendet – nächste Übung oder, falls alle durch, Runde erhöhen
           if (this.currentExercise === exercises.length - 1) {
             this.currentExercise = 0;
             this.rounds++;
             this.playBeep(880, 400, 0.1);
-            // Highscore aktualisieren, falls neue Runde höher ist
             const storedHighscore = localStorage.getItem('circuitHighscore');
             if (!storedHighscore || this.rounds > parseInt(storedHighscore, 10)) {
               localStorage.setItem('circuitHighscore', this.rounds);
@@ -708,7 +681,6 @@
       }
     }
 
-    // App-Start, sobald der DOM geladen ist
     document.addEventListener('DOMContentLoaded', () => {
       const circuit = new CircuitTimer();
     });
