@@ -1,716 +1,717 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#4f46e5">
-    <title>Zirkeltraining</title>
-    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiWmlya2VsdHJhaW5pbmciLCJzaG9ydF9uYW1lIjoiWmlya2VsIiwiZGVzY3JpcHRpb24iOiJFaW4gWmlya2VsdHJhaW5pbmdzLVRpbWVyIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiI2ZmZmZmZiIsInRoZW1lX2NvbG9yIjoiIzRmNDZlNSIsInN0YXJ0X3VybCI6Ii8ifQ==">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: #f0f2f5;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 1rem;
-            -webkit-user-select: none;
-            user-select: none;
-        }
-
-        .app {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 360px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .progress-bar {
-            height: 8px;
-            width: 100%;
-            transition: background-color 0.5s ease;
-        }
-
-        .container {
-            padding: 1rem;
-        }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-
-        .round {
-            font-size: 1.25rem;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .wake-lock-icon {
-            width: 16px;
-            height: 16px;
-            opacity: 0.5;
-        }
-
-        .wake-lock-active {
-            opacity: 1;
-            color: #4f46e5;
-        }
-
-        .sound-toggle {
-            background: none;
-            border: none;
-            padding: 0.5rem;
-            cursor: pointer;
-            color: #666;
-            transition: transform 0.2s ease;
-        }
-
-        .sound-toggle:active {
-            transform: scale(0.95);
-        }
-
-        .exercise-card {
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .exercise-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: currentColor;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .exercise-card.prepare {
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.02); }
-            100% { transform: scale(1); }
-        }
-
-        .exercise-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: start;
-            margin-bottom: 1rem;
-            position: relative;
-        }
-
-        .exercise-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 0.25rem;
-        }
-
-        .exercise-target {
-            font-size: 0.875rem;
-            color: #666;
-        }
-
-        .timer {
-            text-align: center;
-            margin-bottom: 1rem;
-            position: relative;
-        }
-
-        .time {
-            font-size: 3.5rem;
-            font-weight: bold;
-            margin-bottom: 0.25rem;
-            font-variant-numeric: tabular-nums;
-            transition: color 0.3s ease;
-        }
-
-        .time.warning {
-            color: #dc2626;
-            animation: shake 0.5s ease-in-out;
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-4px); }
-            75% { transform: translateX(4px); }
-        }
-
-        .phase {
-            font-size: 1rem;
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .instructions {
-            font-size: 0.875rem;
-            color: #444;
-            position: relative;
-        }
-
-        .instruction {
-            margin-bottom: 0.5rem;
-            padding-left: 1rem;
-            position: relative;
-        }
-
-        .instruction::before {
-            content: '•';
-            position: absolute;
-            left: 0;
-            color: currentColor;
-        }
-
-        .controls {
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-        }
-
-        .main-button {
-            width: 100%;
-            padding: 1rem;
-            border: none;
-            border-radius: 8px;
-            color: white;
-            font-weight: 500;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            transition: all 0.2s ease;
-            font-size: 1.125rem;
-        }
-
-        .main-button:active {
-            transform: scale(0.98);
-        }
-
-        .bottom-controls {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .reset-button {
-            padding: 0.5rem 1rem;
-            border: none;
-            border-radius: 6px;
-            background: #e5e7eb;
-            color: #374151;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: all 0.2s ease;
-        }
-
-        .reset-button:active {
-            transform: scale(0.98);
-            background: #d1d5db;
-        }
-
-        .exercise-type {
-            font-size: 0.875rem;
-            font-weight: 500;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            background: rgba(0,0,0,0.05);
-        }
-
-        .icon {
-            width: 20px;
-            height: 20px;
-            fill: none;
-            stroke: currentColor;
-            stroke-width: 2;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-        }
-
-        .phase-transition {
-            animation: fadeInOut 0.5s ease-in-out;
-        }
-
-        @keyframes fadeInOut {
-            0% { opacity: 0; transform: scale(0.95); }
-            100% { opacity: 1; transform: scale(1); }
-        }
-
-        #installButton {
-            display: none;
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 0.75rem 1.5rem;
-            background: #4f46e5;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-weight: 500;
-            cursor: pointer;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-            animation: slideUp 0.3s ease-out;
-        }
-
-        @keyframes slideUp {
-            from { transform: translate(-50%, 100%); }
-            to { transform: translate(-50%, 0); }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#4f46e5">
+  <title>Zirkeltraining</title>
+  <!-- Manifest (als Data-URL – hier kann man bei Bedarf auch eine separate Datei nutzen) -->
+  <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiWmlya2VsdHJhaW5pbmciLCJzaG9ydF9uYW1lIjoiWmlya2VsIiwiZGVzY3JpcHRpb24iOiJQaXplZCBLaXR0ZXItWppya2VsdHJhaW5pbmciLCJkaXNwbGF5IjoiYXBwIiwgImJhY2tncm91bmRfY29sb3IiOiIjZmZmZmZmIiwidGhlbWVfY29sb3IiOiIjNGY0NmU1Iiwic3RhcnRfdXJsIjoiLyJ9">
+  <style>
+    /* Reset und Grundlayout */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f0f2f5;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    .app {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 360px;
+      overflow: hidden;
+      position: relative;
+    }
+    .progress-bar {
+      height: 8px;
+      background-color: #4f46e5;
+      width: 100%;
+      transition: background-color 0.5s ease, width 0.3s ease;
+    }
+    .container {
+      padding: 1rem;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    .header-left {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    .round, .highscore {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #374151;
+    }
+    .round svg, .highscore svg {
+      margin-left: 0.25rem;
+    }
+    .wake-lock-icon {
+      width: 16px;
+      height: 16px;
+      opacity: 0.5;
+      transition: opacity 0.3s ease;
+    }
+    .wake-lock-active {
+      opacity: 1;
+      color: #4f46e5;
+    }
+    .sound-toggle {
+      background: none;
+      border: none;
+      padding: 0.5rem;
+      cursor: pointer;
+      color: #666;
+      transition: transform 0.2s ease;
+    }
+    .sound-toggle:active {
+      transform: scale(0.95);
+    }
+    .exercise-card {
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      position: relative;
+      overflow: hidden;
+      background-color: #fef3c7;
+      transition: background-color 0.3s ease;
+    }
+    .exercise-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: currentColor;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .exercise-card.prepare {
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.02); }
+      100% { transform: scale(1); }
+    }
+    .exercise-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+      position: relative;
+    }
+    .exercise-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+      color: #111827;
+    }
+    .exercise-target {
+      font-size: 0.875rem;
+      color: #6b7280;
+    }
+    .timer {
+      text-align: center;
+      margin-bottom: 1rem;
+      position: relative;
+    }
+    .time {
+      font-size: 3.5rem;
+      font-weight: bold;
+      margin-bottom: 0.25rem;
+      font-variant-numeric: tabular-nums;
+      transition: color 0.3s ease;
+      color: #111827;
+    }
+    .time.warning {
+      color: #dc2626;
+      animation: shake 0.5s ease-in-out;
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-4px); }
+      75% { transform: translateX(4px); }
+    }
+    .phase {
+      font-size: 1rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #4b5563;
+    }
+    .instructions {
+      font-size: 0.875rem;
+      color: #444;
+      margin-bottom: 0.5rem;
+    }
+    .instruction {
+      margin-bottom: 0.5rem;
+      padding-left: 1rem;
+      position: relative;
+    }
+    .instruction::before {
+      content: '•';
+      position: absolute;
+      left: 0;
+      color: currentColor;
+    }
+    .controls {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .main-button {
+      width: 100%;
+      padding: 1rem;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: all 0.2s ease;
+      font-size: 1.125rem;
+    }
+    .main-button:active {
+      transform: scale(0.98);
+    }
+    .bottom-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .reset-button {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 6px;
+      background: #e5e7eb;
+      color: #374151;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s ease;
+      font-size: 0.95rem;
+    }
+    .reset-button:active {
+      transform: scale(0.98);
+      background: #d1d5db;
+    }
+    .exercise-type {
+      font-size: 0.875rem;
+      font-weight: 500;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      background: rgba(0,0,0,0.05);
+    }
+    .icon {
+      width: 20px;
+      height: 20px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .phase-transition {
+      animation: fadeInOut 0.5s ease-in-out;
+    }
+    @keyframes fadeInOut {
+      0% { opacity: 0; transform: scale(0.95); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+    #installButton {
+      display: none;
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 0.75rem 1.5rem;
+      background: #4f46e5;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 500;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      animation: slideUp 0.3s ease-out;
+    }
+    @keyframes slideUp {
+      from { transform: translate(-50%, 100%); }
+      to { transform: translate(-50%, 0); }
+    }
+  </style>
 </head>
 <body>
-    <div class="app">
-        <div id="progressBar" class="progress-bar"></div>
-        <div class="container">
-            <div class="header">
-                <div class="round">
-                    Runde <span id="roundCounter">1</span>
-                    <svg class="wake-lock-icon" viewBox="0 0 24 24">
-                        <path d="M12 6v12M6 12h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                    </svg>
-                </div>
-                <button class="sound-toggle" id="soundToggle" title="Sound an/aus">
-                    <svg class="icon">
-                        <use id="soundIcon" href="#icon-volume-2"/>
-                    </svg>
-                </button>
-            </div>
-
-            <div id="exerciseCard" class="exercise-card">
-                <div class="exercise-header">
-                    <div>
-                        <div class="exercise-title" id="exerciseName"></div>
-                        <div class="exercise-target" id="exerciseTarget"></div>
-                    </div>
-                    <div id="exerciseIcon"></div>
-                </div>
-
-                <div class="timer">
-                    <div class="time" id="timeDisplay">0:10</div>
-                    <div class="phase" id="phaseDisplay">Vorbereitung</div>
-                </div>
-
-                <div class="instructions" id="instructions"></div>
-            </div>
-
-            <div class="controls">
-                <button class="main-button" id="startButton" style="background: #22c55e;">
-                    <svg class="icon" id="playIcon">
-                        <use href="#icon-play"/>
-                    </svg>
-                    <span id="buttonText">Start</span>
-                </button>
-
-                <div class="bottom-controls">
-                    <button class="reset-button" id="resetButton">
-                        <svg class="icon">
-                            <use href="#icon-rotate-ccw"/>
-                        </svg>
-                        Reset
-                    </button>
-                    <div class="exercise-type" id="exerciseType"></div>
-                </div>
-            </div>
+  <div class="app">
+    <!-- Die Fortschrittsanzeige wird nun auch in der Breite animiert -->
+    <div id="progressBar" class="progress-bar"></div>
+    <div class="container">
+      <div class="header">
+        <div class="header-left">
+          <div class="round">Runde <span id="roundCounter">1</span></div>
+          <div class="highscore">Highscore: <span id="highscoreDisplay">0</span></div>
         </div>
+        <button class="sound-toggle" id="soundToggle" title="Sound an/aus">
+          <svg class="icon">
+            <use id="soundIcon" href="#icon-volume-2"/>
+          </svg>
+        </button>
+      </div>
+
+      <div id="exerciseCard" class="exercise-card">
+        <div class="exercise-header">
+          <div>
+            <div class="exercise-title" id="exerciseName"></div>
+            <div class="exercise-target" id="exerciseTarget"></div>
+          </div>
+          <div id="exerciseIcon"></div>
+        </div>
+
+        <div class="timer">
+          <div class="time" id="timeDisplay">0:10</div>
+          <div class="phase" id="phaseDisplay">Vorbereitung</div>
+        </div>
+
+        <div class="instructions" id="instructions"></div>
+      </div>
+
+      <div class="controls">
+        <button class="main-button" id="startButton" style="background: #22c55e;">
+          <svg class="icon" id="playIcon">
+            <use href="#icon-play"/>
+          </svg>
+          <span id="buttonText">Start</span>
+        </button>
+
+        <div class="bottom-controls">
+          <button class="reset-button" id="resetButton">
+            <svg class="icon">
+              <use href="#icon-rotate-ccw"/>
+            </svg>
+            Reset
+          </button>
+          <div class="exercise-type" id="exerciseType"></div>
+        </div>
+      </div>
     </div>
+  </div>
 
-    <button id="installButton">App installieren</button>
+  <button id="installButton">App installieren</button>
 
-    <!-- SVG Icons -->
-    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
-        <symbol id="icon-play" viewBox="0 0 24 24">
-            <polygon points="5 3 19 12 5 21 5 3"/>
-        </symbol>
-        <symbol id="icon-pause" viewBox="0 0 24 24">
-            <rect x="6" y="4" width="4" height="16"/>
-            <rect x="14" y="4" width="4" height="16"/>
-        </symbol>
-        <symbol id="icon-rotate-ccw" viewBox="0 0 24 24">
-            <path d="M1 4v6h6"/>
-            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
-        </symbol>
-        <symbol id="icon-volume-2" viewBox="0 0 24 24">
-            <path d="M11 5L6 9H2v6h4l5 4V5z"/>
-            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
-            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
-        </symbol>
-        <symbol id="icon-volume-x" viewBox="0 0 24 24">
-            <path d="M11 5L6 9H2v6h4l5 4V5z"/>
-            <line x1="23" y1="9" x2="17" y2="15"/>
-            <line x1="17" y1="9" x2="23" y2="15"/>
-        </symbol>
-        <symbol id="icon-dumbbell" viewBox="0 0 24 24">
-            <path d="M6 5v14M18 5v14M6 9H4a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h2M18 9h2a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-2"/>
-        </symbol>
-        <symbol id="icon-heart" viewBox="0 0 24 24">
-            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-        </symbol>
-    </svg>
-    <script>
-        // Service Worker Registration
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('data:application/javascript;base64,c2VsZi5hZGRFdmVudExpc3RlbmVyKCdpbnN0YWxsJywgZSA9PiB7CiAgZS53YWl0VW50aWwoc2VsZi5za2lwV2FpdGluZygpKTsKfSk7CgpzZWxmLmFkZEV2ZW50TGlzdGVuZXIoJ2FjdGl2YXRlJywgZSA9PiB7CiAgZS53YWl0VW50aWwoc2VsZi5jbGllbnRzLmNsYWltKCkpOwp9KTsKCnNlbGYuYWRkRXZlbnRMaXN0ZW5lcignZmV0Y2gnLCBlID0+IHsKICBlLnJlc3BvbmRXaXRoKAogICAgY2FjaGVzLm1hdGNoKGUucmVxdWVzdCkKICAgICAgLnRoZW4ocmVzcG9uc2UgPT4gcmVzcG9uc2UgfHwgZmV0Y2goZS5yZXF1ZXN0KSkKICApOwp9KTs=')
-                .then(() => console.log('Service Worker registered'))
-                .catch(err => console.error('Service Worker registration failed:', err));
+  <!-- SVG Icons -->
+  <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+    <symbol id="icon-play" viewBox="0 0 24 24">
+      <polygon points="5 3 19 12 5 21 5 3"/>
+    </symbol>
+    <symbol id="icon-pause" viewBox="0 0 24 24">
+      <rect x="6" y="4" width="4" height="16"/>
+      <rect x="14" y="4" width="4" height="16"/>
+    </symbol>
+    <symbol id="icon-rotate-ccw" viewBox="0 0 24 24">
+      <path d="M1 4v6h6"/>
+      <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+    </symbol>
+    <symbol id="icon-volume-2" viewBox="0 0 24 24">
+      <path d="M11 5L6 9H2v6h4l5 4V5z"/>
+      <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+      <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+    </symbol>
+    <symbol id="icon-volume-x" viewBox="0 0 24 24">
+      <path d="M11 5L6 9H2v6h4l5 4V5z"/>
+      <line x1="23" y1="9" x2="17" y2="15"/>
+      <line x1="17" y1="9" x2="23" y2="15"/>
+    </symbol>
+    <symbol id="icon-dumbbell" viewBox="0 0 24 24">
+      <path d="M6 5v14M18 5v14M6 9H4a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h2M18 9h2a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-2"/>
+    </symbol>
+    <symbol id="icon-heart" viewBox="0 0 24 24">
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+    </symbol>
+  </svg>
+
+  <script>
+    // Service Worker Registrierung
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('data:application/javascript;base64,c2VsZi5hZGRFdmVudExpc3RlbmVyKCdpbnN0YWxsJywgZSA9PiB7CiAgZS53YWl0VW50aWwoc2VsZi5za2lwV2FpdGluZygpKTsKfSk7CgpzZWxmLmFkZEV2ZW50TGlzdGVuZXIoJ2FjdGl2YXRlJywgZSA9PiB7CiAgZS53YWl0VW50aWwoc2VsZi5jbGllbnRzLmNsYWltKCkpOwp9KTsKCnNlbGYuYWRkRXZlbnRMaXN0ZW5lcignZmV0Y2gnLCBlID0+IHsKICBlLnJlc3BvbmRXaXRoKAogICAgY2FjaGVzLm1hdGNoKGUucmVxdWVzdCkKICAgICAgLnRoZW4ocmVzcG9uc2UgPT4gcmVzcG9uc2UgfHwgZmV0Y2goZS5yZXF1ZXN0KSkKICApOwp9KTs=')
+      .then(() => console.log('Service Worker registered'))
+      .catch(err => console.error('Service Worker registration failed:', err));
+    }
+
+    // PWA Install Prompt
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      document.getElementById('installButton').style.display = 'block';
+    });
+
+    document.getElementById('installButton').addEventListener('click', async () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log(`User response to the install prompt: ${outcome}`);
+        deferredPrompt = null;
+        document.getElementById('installButton').style.display = 'none';
+      }
+    });
+
+    // Übungsliste – ausschließlich Körpergewichtsübungen
+    const exercises = [
+      {
+        name: "Kniebeugen",
+        type: "kraft",
+        duration: 45,
+        icon: "dumbbell",
+        equipment: "Keine",
+        target: "Beine & Po",
+        instructions: [
+          "Füße schulterbreit aufstellen.",
+          "In die Hocke gehen, als würdest Du Dich auf einen Stuhl setzen.",
+          "Knie nicht über die Zehenspitzen hinausschieben.",
+          "Rücken gerade halten und wieder hochdrücken."
+        ]
+      },
+      {
+        name: "High Knees",
+        type: "cardio",
+        duration: 60,
+        icon: "heart",
+        equipment: "Keine",
+        target: "Herz-Kreislauf",
+        instructions: [
+          "Im Stehen abwechselnd die Knie so hoch wie möglich heben.",
+          "Arme mitschwingen lassen.",
+          "Ruhig atmen und das Tempo zügig beibehalten.",
+          "Auf eine saubere Technik achten."
+        ]
+      },
+      {
+        name: "Liegestütze",
+        type: "kraft",
+        duration: 45,
+        icon: "dumbbell",
+        equipment: "Keine",
+        target: "Brust, Arme & Core",
+        instructions: [
+          "Hände schulterbreit auf dem Boden platzieren.",
+          "Körper in einer geraden Linie halten.",
+          "Langsam absenken, bis die Brust fast den Boden berührt.",
+          "Wieder hochdrücken; bei Bedarf die Knie am Boden lassen."
+        ]
+      },
+      {
+        name: "Mountain Climbers",
+        type: "cardio",
+        duration: 60,
+        icon: "heart",
+        equipment: "Keine",
+        target: "Core & Herz-Kreislauf",
+        instructions: [
+          "In Liegestützposition starten.",
+          "Abwechselnd die Knie schnell zur Brust ziehen.",
+          "Das Tempo gleichmäßig hochhalten.",
+          "Bauch fest anspannen, um den Rücken zu schützen."
+        ]
+      },
+      {
+        name: "Burpees",
+        type: "cardio",
+        duration: 45,
+        icon: "heart",
+        equipment: "Keine",
+        target: "Ganzkörper",
+        instructions: [
+          "Aus dem Stand in die Hocke gehen und in die Liegestützposition springen.",
+          "Optional einen Liegestütz ausführen.",
+          "Zurück in die Hocke springen und dann explosiv hochspringen.",
+          "Ruhig atmen und in einem gleichmäßigen Rhythmus weitermachen."
+        ]
+      },
+      {
+        name: "Hampelmann",
+        type: "cardio",
+        duration: 60,
+        icon: "heart",
+        equipment: "Keine",
+        target: "Herz-Kreislauf",
+        instructions: [
+          "Startposition: Füße zusammen, Arme an den Seiten.",
+          "Beim Sprung Beine spreizen und Arme über den Kopf führen.",
+          "Wieder in die Ausgangsposition springen.",
+          "In einem gleichmäßigen Rhythmus fortfahren."
+        ]
+      }
+    ];
+
+    class CircuitTimer {
+      constructor() {
+        this.currentExercise = 0;
+        this.rounds = 0;
+        this.isActive = false;
+        // Phase „prepare“ dauert immer 10 Sekunden
+        this.prepareTime = 10;
+        this.timeLeft = this.prepareTime;
+        this.phase = 'prepare'; // 'prepare' oder 'exercise'
+        this.soundEnabled = true;
+        this.audioContext = null;
+        this.wakeLock = null;
+
+        // DOM-Elemente
+        this.elements = {
+          progressBar: document.getElementById('progressBar'),
+          roundCounter: document.getElementById('roundCounter'),
+          highscoreDisplay: document.getElementById('highscoreDisplay'),
+          exerciseName: document.getElementById('exerciseName'),
+          exerciseTarget: document.getElementById('exerciseTarget'),
+          exerciseIcon: document.getElementById('exerciseIcon'),
+          timeDisplay: document.getElementById('timeDisplay'),
+          phaseDisplay: document.getElementById('phaseDisplay'),
+          instructions: document.getElementById('instructions'),
+          startButton: document.getElementById('startButton'),
+          buttonText: document.getElementById('buttonText'),
+          playIcon: document.getElementById('playIcon'),
+          resetButton: document.getElementById('resetButton'),
+          exerciseType: document.getElementById('exerciseType'),
+          exerciseCard: document.getElementById('exerciseCard'),
+          soundToggle: document.getElementById('soundToggle'),
+          soundIcon: document.getElementById('soundIcon')
+        };
+
+        // Event-Listener
+        this.elements.startButton.addEventListener('click', () => this.toggleTimer());
+        this.elements.resetButton.addEventListener('click', () => this.resetTraining());
+        this.elements.soundToggle.addEventListener('click', () => this.toggleSound());
+
+        this.loadHighscore();
+        this.initWakeLock();
+        this.updateDisplay();
+      }
+
+      // Wake-Lock, damit der Bildschirm nicht dunkel wird
+      async initWakeLock() {
+        if ('wakeLock' in navigator) {
+          try {
+            this.wakeLock = await navigator.wakeLock.request('screen');
+            document.querySelector('.wake-lock-icon')?.classList.add('wake-lock-active');
+          } catch (err) {
+            console.error('Wake Lock error:', err);
+          }
+        }
+      }
+      async releaseWakeLock() {
+        if (this.wakeLock) {
+          await this.wakeLock.release();
+          this.wakeLock = null;
+          document.querySelector('.wake-lock-icon')?.classList.remove('wake-lock-active');
+        }
+      }
+      initAudioContext() {
+        if (!this.audioContext) {
+          this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        return this.audioContext;
+      }
+      playBeep(frequency = 440, duration = 200, volume = 0.1) {
+        if (!this.soundEnabled) return;
+        try {
+          const audioContext = this.initAudioContext();
+          const oscillator = audioContext.createOscillator();
+          const gainNode = audioContext.createGain();
+          oscillator.connect(gainNode);
+          gainNode.connect(audioContext.destination);
+          gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+          gainNode.gain.linearRampToValueAtTime(volume, audioContext.currentTime + 0.01);
+          gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + duration / 1000);
+          oscillator.frequency.value = frequency;
+          oscillator.type = 'sine';
+          oscillator.start(audioContext.currentTime);
+          oscillator.stop(audioContext.currentTime + duration / 1000 + 0.01);
+        } catch (error) {
+          console.error('Audio error:', error);
+        }
+      }
+      toggleSound() {
+        this.soundEnabled = !this.soundEnabled;
+        this.elements.soundIcon.setAttribute('href',
+          this.soundEnabled ? '#icon-volume-2' : '#icon-volume-x');
+        if (this.soundEnabled) {
+          this.playBeep(440, 100, 0.1);
+        }
+      }
+      formatTime(seconds) {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
+      }
+      updateDisplay() {
+        const exercise = exercises[this.currentExercise];
+        // Hintergrundfarbe der Progress-Bar je nach Phase und Übungstyp:
+        this.elements.progressBar.style.backgroundColor =
+          this.phase === 'prepare' ? '#fbbf24' :
+          exercise.type === 'kraft' ? '#3b82f6' : '#ef4444';
+        // Farbe der Übungskarte:
+        this.elements.exerciseCard.style.backgroundColor =
+          this.phase === 'prepare' ? '#fef3c7' :
+          exercise.type === 'kraft' ? '#eff6ff' : '#fef2f2';
+
+        // Fortschrittsanzeige: Fülle die Leiste entsprechend der verbleibenden Zeit
+        const totalTime = this.phase === 'prepare' ? this.prepareTime : exercise.duration;
+        const progressPercent = (this.timeLeft / totalTime) * 100;
+        this.elements.progressBar.style.width = progressPercent + "%";
+
+        this.elements.roundCounter.textContent = this.rounds + 1;
+        this.elements.exerciseName.textContent = exercise.name;
+        this.elements.exerciseTarget.textContent = exercise.target;
+        this.elements.timeDisplay.textContent = this.formatTime(this.timeLeft);
+        this.elements.phaseDisplay.textContent = this.phase === 'prepare' ? 'Vorbereitung' : 'Übung';
+        // Zeige auch den Typ und die Dauer als kleine Info:
+        this.elements.exerciseType.textContent =
+          this.phase === 'prepare'
+            ? `10s Vorbereitung`
+            : (exercise.type === 'kraft' ? `${exercise.duration}s Kraft` : `${exercise.duration}s Cardio`);
+
+        // Icon: Kraftübungen erhalten den Hantel- (dumbbell) Icon, Cardio den Herz-Icon
+        this.elements.exerciseIcon.innerHTML = `
+          <svg class="icon" style="color: ${exercise.type === 'kraft' ? '#3b82f6' : '#ef4444'}">
+            <use href="#icon-${exercise.icon}"/>
+          </svg>
+        `;
+
+        // Anweisungen
+        this.elements.instructions.innerHTML = exercise.instructions
+          .map(ins => `<div class="instruction">${ins}</div>`)
+          .join('');
+
+        // Button-Text und Icon anpassen
+        this.elements.buttonText.textContent = this.isActive ? 'Pause' : 'Start';
+        this.elements.playIcon.setAttribute('href',
+          this.isActive ? '#icon-pause' : '#icon-play');
+        this.elements.startButton.style.backgroundColor = this.isActive ? '#eab308' : '#22c55e';
+
+        // Übergangsanimation für die Karte
+        this.elements.exerciseCard.classList.add('phase-transition');
+        setTimeout(() => {
+          this.elements.exerciseCard.classList.remove('phase-transition');
+        }, 500);
+
+        // Zeitwarnung (bei wenigen Sekunden blinkt die Zeit rot)
+        if (this.timeLeft <= 3 && this.timeLeft > 0) {
+          this.elements.timeDisplay.classList.add('warning');
+        } else {
+          this.elements.timeDisplay.classList.remove('warning');
         }
 
-        // PWA Install Prompt
-        let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            document.getElementById('installButton').style.display = 'block';
-        });
-
-        document.getElementById('installButton').addEventListener('click', async () => {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                console.log(`User response to the install prompt: ${outcome}`);
-                deferredPrompt = null;
-                document.getElementById('installButton').style.display = 'none';
-            }
-        });
-
-        const exercises = [
-            {
-                name: "Kniebeugen",
-                type: "kraft",
-                duration: 45,
-                icon: "dumbbell",
-                equipment: "Manschettengewichte (optional)",
-                target: "Beine & Po",
-                instructions: [
-                    "Füße schulterbreit aufstellen",
-                    "Gesäß nach hinten schieben wie beim Hinsetzen",
-                    "Knie nicht über Zehenspitzen",
-                    "Rücken gerade halten"
-                ]
-            },
-            {
-                name: "High Knees",
-                type: "cardio",
-                duration: 60,
-                icon: "heart",
-                equipment: "Keine",
-                target: "Herz-Kreislauf",
-                instructions: [
-                    "Im Stand die Knie abwechselnd hochziehen",
-                    "Arme wie beim Joggen mitschwingen",
-                    "Auf der Stelle bleiben",
-                    "Tempo nach Fitness anpassen"
-                ]
-            },
-            {
-                name: "Liegestütze",
-                type: "kraft",
-                duration: 45,
-                icon: "dumbbell",
-                equipment: "Keine",
-                target: "Brust & Arme",
-                instructions: [
-                    "Starte in Liegestützposition, Hände schulterbreit",
-                    "Senke den Körper ab, bis die Brust fast den Boden berührt",
-                    "Arme durchstrecken, zurück in Ausgangsposition",
-                    "Körper gerade halten, Bauch anspannen"
-                ]
-            },
-            {
-                name: "Mountain Climbers",
-                type: "cardio",
-                duration: 60,
-                icon: "heart",
-                equipment: "Keine",
-                target: "Herz-Kreislauf & Core",
-                instructions: [
-                    "Liegestützposition einnehmen",
-                    "Knie abwechselnd zur Brust ziehen",
-                    "Schnelles Tempo halten",
-                    "Hüfte nicht hochnehmen"
-                ]
-            },
-            {
-                name: "Bizeps-Curls",
-                type: "kraft",
-                duration: 45,
-                icon: "dumbbell",
-                equipment: "Gummiband",
-                target: "Arme",
-                instructions: [
-                    "Gummiband unter die Füße klemmen",
-                    "Ellbogen nah am Körper halten",
-                    "Unterarme nach oben ziehen",
-                    "Langsam wieder ablassen"
-                ]
-            },
-            {
-                name: "Hampelmann",
-                type: "cardio",
-                duration: 60,
-                icon: "heart",
-                equipment: "Keine",
-                target: "Herz-Kreislauf",
-                instructions: [
-                    "Start: Füße zusammen, Arme seitlich",
-                    "Sprung: Beine auseinander, Arme über Kopf",
-                    "Sprung zurück in Ausgangsposition",
-                    "Rhythmisch weitermachen"
-                ]
-            }
-        ];
-
-        class CircuitTimer {
-            constructor() {
-                this.currentExercise = 0;
-                this.rounds = 0;
-                this.isActive = false;
-                this.timeLeft = 10;
-                this.phase = 'prepare';
-                this.soundEnabled = true;
-                this.audioContext = null;
-                this.wakeLock = null;
-
-                // DOM Elements
-                this.elements = {
-                    progressBar: document.getElementById('progressBar'),
-                    roundCounter: document.getElementById('roundCounter'),
-                    exerciseName: document.getElementById('exerciseName'),
-                    exerciseTarget: document.getElementById('exerciseTarget'),
-                    exerciseIcon: document.getElementById('exerciseIcon'),
-                    timeDisplay: document.getElementById('timeDisplay'),
-                    phaseDisplay: document.getElementById('phaseDisplay'),
-                    instructions: document.getElementById('instructions'),
-                    startButton: document.getElementById('startButton'),
-                    buttonText: document.getElementById('buttonText'),
-                    playIcon: document.getElementById('playIcon'),
-                    resetButton: document.getElementById('resetButton'),
-                    exerciseType: document.getElementById('exerciseType'),
-                    exerciseCard: document.getElementById('exerciseCard'),
-                    soundToggle: document.getElementById('soundToggle'),
-                    soundIcon: document.getElementById('soundIcon')
-                };
-
-                // Event Listeners
-                this.elements.startButton.addEventListener('click', () => this.toggleTimer());
-                this.elements.resetButton.addEventListener('click', () => this.resetTraining());
-                this.elements.soundToggle.addEventListener('click', () => this.toggleSound());
-
-                this.initWakeLock();
-                this.updateDisplay();
-            }
-
-            async initWakeLock() {
-                if ('wakeLock' in navigator) {
-                    try {
-                        this.wakeLock = await navigator.wakeLock.request('screen');
-                        document.querySelector('.wake-lock-icon').classList.add('wake-lock-active');
-                    } catch (err) {
-                        console.error('Wake Lock error:', err);
-                    }
-                }
-            }
-
-            async releaseWakeLock() {
-                if (this.wakeLock) {
-                    await this.wakeLock.release();
-                    this.wakeLock = null;
-                    document.querySelector('.wake-lock-icon').classList.remove('wake-lock-active');
-                }
-            }
-
-            initAudioContext() {
-                if (!this.audioContext) {
-                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                }
-                return this.audioContext;
-            }
-
-            playBeep(frequency = 440, duration = 200, volume = 0.1) {
-                if (!this.soundEnabled) return;
-                
-                try {
-                    const audioContext = this.initAudioContext();
-                    const oscillator = audioContext.createOscillator();
-                    const gainNode = audioContext.createGain();
-                    
-                    oscillator.connect(gainNode);
-                    gainNode.connect(audioContext.destination);
-                    
-                    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-                    gainNode.gain.linearRampToValueAtTime(volume, audioContext.currentTime + 0.01);
-                    gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + duration/1000);
-                    
-                    oscillator.frequency.value = frequency;
-                    oscillator.type = 'sine';
-                    
-                    oscillator.start(audioContext.currentTime);
-                    oscillator.stop(audioContext.currentTime + duration/1000 + 0.01);
-                } catch (error) {
-                    console.error('Audio error:', error);
-                }
-            }
-
-            toggleSound() {
-                this.soundEnabled = !this.soundEnabled;
-                this.elements.soundIcon.setAttribute('href', 
-                    this.soundEnabled ? '#icon-volume-2' : '#icon-volume-x');
-                if (this.soundEnabled) {
-                    this.playBeep(440, 100, 0.1);
-                }
-            }
-
-            formatTime(seconds) {
-                const mins = Math.floor(seconds / 60);
-                const secs = seconds % 60;
-                return `${mins}:${secs.toString().padStart(2, '0')}`;
-            }
-
-            updateDisplay() {
-                const exercise = exercises[this.currentExercise];
-                
-                this.elements.progressBar.style.backgroundColor = 
-                    this.phase === 'prepare' ? '#fbbf24' :
-                    exercise.type === 'kraft' ? '#3b82f6' : '#ef4444';
-
-                this.elements.exerciseCard.style.backgroundColor = 
-                    this.phase === 'prepare' ? '#fef3c7' :
-                    exercise.type === 'kraft' ? '#eff6ff' : '#fef2f2';
-
-                this.elements.roundCounter.textContent = this.rounds + 1;
-                this.elements.exerciseName.textContent = exercise.name;
-                this.elements.exerciseTarget.textContent = exercise.target;
-                this.elements.timeDisplay.textContent = this.formatTime(this.timeLeft);
-                this.elements.phaseDisplay.textContent = this.phase === 'prepare' ? 'Vorbereitung' : 'Übung';
-                
-                this.elements.exerciseType.textContent = 
-                    `${exercise.type === 'kraft' ? '45s Kraft' : '60s Cardio'}`;
-
-                this.elements.exerciseIcon.innerHTML = `
-                    <svg class="icon" style="color: ${exercise.type === 'kraft' ? '#3b82f6' : '#ef4444'}">
-                        <use href="#icon-${exercise.icon}"/>
-                    </svg>
-                `;
-
-                this.elements.instructions.innerHTML = exercise.instructions
-                    .map(instruction => `<div class="instruction">${instruction}</div>`)
-                    .join('');
-
-                this.elements.buttonText.textContent = this.isActive ? 'Pause' : 'Start';
-                this.elements.playIcon.setAttribute('href', 
-                    this.isActive ? '#icon-pause' : '#icon-play');
-                this.elements.startButton.style.backgroundColor = 
-                    this.isActive ? '#eab308' : '#22c55e';
-
-                this.elements.exerciseCard.classList.add('phase-transition');
-                setTimeout(() => {
-                    this.elements.exerciseCard.classList.remove('phase-transition');
-                }, 500);
-
-                if (this.timeLeft <= 3 && this.timeLeft > 0) {
-                    this.elements.timeDisplay.classList.add('warning');
-                } else {
-                    this.elements.timeDisplay.classList.remove('warning');
-                }
-
-                if (this.phase === 'prepare') {
-                    this.elements.exerciseCard.classList.add('prepare');
-                } else {
-                    this.elements.exerciseCard.classList.remove('prepare');
-                }
-            }
-
-            nextPhase() {
-                if (this.phase === 'prepare') {
-                    this.phase = 'exercise';
-                    this.timeLeft = exercises[this.currentExercise].duration;
-                    this.playBeep(660, 200, 0.1);
-                } else {
-                    if (this.currentExercise === exercises.length - 1) {
-                        this.currentExercise = 0;
-                        this.rounds++;
-                        this.playBeep(880, 400, 0.1);
-                    } else {
-                        this.currentExercise++;
-                    }
-                    this.phase = 'prepare';
-                    this.timeLeft = 10;
-                    this.playBeep(440, 200, 0.1);
-                }
-                this.updateDisplay();
-            }
-
-            toggleTimer() {
-                this.isActive = !this.isActive;
-                if (this.isActive) {
-                    this.initAudioContext();
-                    this.playBeep(550, 100, 0.1);
-                    this.startTimer();
-                }
-                this.updateDisplay();
-            }
-
-            startTimer() {
-                if (!this.isActive) return;
-                
-                if (this.timeLeft > 0) {
-                    setTimeout(() => {
-                        if (this.isActive) {
-                            this.timeLeft--;
-                            if (this.timeLeft <= 3 && this.timeLeft > 0) {
-                                this.playBeep(440, 100, 0.05);
-                            }
-                            this.updateDisplay();
-                            this.startTimer();
-                        }
-                    }, 1000);
-                } else {
-                    this.nextPhase();
-                    this.startTimer();
-                }
-            }
-
-            resetTraining() {
-                this.currentExercise = 0;
-                this.rounds = 0;
-                this.isActive = false;
-                this.phase = 'prepare';
-                this.timeLeft = 10;
-                this.playBeep(330, 200, 0.1);
-                this.updateDisplay();
-            }
+        // Bei Vorbereitung etwas pulsieren lassen
+        if (this.phase === 'prepare') {
+          this.elements.exerciseCard.classList.add('prepare');
+        } else {
+          this.elements.exerciseCard.classList.remove('prepare');
         }
+      }
+      // Nach Ablauf der Zeit: Phase wechseln und ggf. Runde abschließen
+      nextPhase() {
+        if (this.phase === 'prepare') {
+          // Wechsel zu Übung: Zeit entsprechend der Übungsdauer setzen
+          this.phase = 'exercise';
+          this.timeLeft = exercises[this.currentExercise].duration;
+          this.playBeep(660, 200, 0.1);
+        } else {
+          // Übung beendet – nächste Übung oder, falls alle durch, Runde erhöhen
+          if (this.currentExercise === exercises.length - 1) {
+            this.currentExercise = 0;
+            this.rounds++;
+            this.playBeep(880, 400, 0.1);
+            // Highscore aktualisieren, falls neue Runde höher ist
+            const storedHighscore = localStorage.getItem('circuitHighscore');
+            if (!storedHighscore || this.rounds > parseInt(storedHighscore, 10)) {
+              localStorage.setItem('circuitHighscore', this.rounds);
+            }
+            this.updateHighscoreDisplay();
+          } else {
+            this.currentExercise++;
+          }
+          this.phase = 'prepare';
+          this.timeLeft = this.prepareTime;
+          this.playBeep(440, 200, 0.1);
+        }
+        this.updateDisplay();
+      }
+      toggleTimer() {
+        this.isActive = !this.isActive;
+        if (this.isActive) {
+          this.initAudioContext();
+          this.playBeep(550, 100, 0.1);
+          this.startTimer();
+        }
+        this.updateDisplay();
+      }
+      startTimer() {
+        if (!this.isActive) return;
+        if (this.timeLeft > 0) {
+          setTimeout(() => {
+            if (this.isActive) {
+              this.timeLeft--;
+              if (this.timeLeft <= 3 && this.timeLeft > 0) {
+                this.playBeep(440, 100, 0.05);
+              }
+              this.updateDisplay();
+              this.startTimer();
+            }
+          }, 1000);
+        } else {
+          this.nextPhase();
+          this.startTimer();
+        }
+      }
+      resetTraining() {
+        this.currentExercise = 0;
+        this.rounds = 0;
+        this.isActive = false;
+        this.phase = 'prepare';
+        this.timeLeft = this.prepareTime;
+        this.playBeep(330, 200, 0.1);
+        this.updateDisplay();
+      }
+      loadHighscore() {
+        const stored = localStorage.getItem('circuitHighscore');
+        if (stored) {
+          this.elements.highscoreDisplay.textContent = stored;
+        } else {
+          this.elements.highscoreDisplay.textContent = "0";
+        }
+      }
+      updateHighscoreDisplay() {
+        const stored = localStorage.getItem('circuitHighscore');
+        this.elements.highscoreDisplay.textContent = stored || "0";
+      }
+    }
 
-        // Start the app
-        document.addEventListener('DOMContentLoaded', () => {
-            const circuit = new CircuitTimer();
-        });
-    </script>
+    // App-Start, sobald der DOM geladen ist
+    document.addEventListener('DOMContentLoaded', () => {
+      const circuit = new CircuitTimer();
+    });
+  </script>
 </body>
 </html>
