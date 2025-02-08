@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zirkeltraining</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #f0f2f5;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .app {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 360px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 8px;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
+
+        .container {
+            padding: 1rem;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .round {
+            font-size: 1.25rem;
+            font-weight: bold;
+        }
+
+        .sound-toggle {
+            background: none;
+            border: none;
+            padding: 0.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .exercise-card {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            transition: background-color 0.3s;
+        }
+
+        .exercise-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+        }
+
+        .exercise-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .exercise-target {
+            font-size: 0.875rem;
+            color: #666;
+        }
+
+        .timer {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .time {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+        }
+
+        .phase {
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .instructions {
+            font-size: 0.875rem;
+            color: #444;
+        }
+
+        .instruction {
+            margin-bottom: 0.5rem;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .main-button {
+            width: 100%;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: background-color 0.2s;
+        }
+
+        .bottom-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .reset-button {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            background: #e5e7eb;
+            color: #374151;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .exercise-type {
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        /* Icons */
+        .icon {
+            width: 20px;
+            height: 20px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <div id="progressBar" class="progress-bar"></div>
+        <div class="container">
+            <div class="header">
+                <div class="round">Runde <span id="roundCounter">1</span></div>
+                <button class="sound-toggle" id="soundToggle" title="Sound an/aus">
+                    <svg class="icon">
+                        <use id="soundIcon" href="#icon-volume-2"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div id="exerciseCard" class="exercise-card">
+                <div class="exercise-header">
+                    <div>
+                        <div class="exercise-title" id="exerciseName"></div>
+                        <div class="exercise-target" id="exerciseTarget"></div>
+                    </div>
+                    <div id="exerciseIcon"></div>
+                </div>
+
+                <div class="timer">
+                    <div class="time" id="timeDisplay">0:10</div>
+                    <div class="phase" id="phaseDisplay">Vorbereitung</div>
+                </div>
+
+                <div class="instructions" id="instructions"></div>
+            </div>
+
+            <div class="controls">
+                <button class="main-button" id="startButton" style="background: #22c55e;">
+                    <svg class="icon" id="playIcon">
+                        <use href="#icon-play"/>
+                    </svg>
+                    <span id="buttonText">Start</span>
+                </button>
+
+                <div class="bottom-controls">
+                    <button class="reset-button" id="resetButton">
+                        <svg class="icon">
+                            <use href="#icon-rotate-ccw"/>
+                        </svg>
+                        Reset
+                    </button>
+                    <div class="exercise-type" id="exerciseType"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SVG Icons -->
+    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+        <symbol id="icon-play" viewBox="0 0 24 24">
+            <polygon points="5 3 19 12 5 21 5 3"/>
+        </symbol>
+        <symbol id="icon-pause" viewBox="0 0 24 24">
+            <rect x="6" y="4" width="4" height="16"/>
+            <rect x="14" y="4" width="4" height="16"/>
+        </symbol>
+        <symbol id="icon-rotate-ccw" viewBox="0 0 24 24">
+            <path d="M1 4v6h6"/>
+            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+        </symbol>
+        <symbol id="icon-volume-2" viewBox="0 0 24 24">
+            <path d="M11 5L6 9H2v6h4l5 4V5z"/>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+        </symbol>
+        <symbol id="icon-volume-x" viewBox="0 0 24 24">
+            <path d="M11 5L6 9H2v6h4l5 4V5z"/>
+            <line x1="23" y1="9" x2="17" y2="15"/>
+            <line x1="17" y1="9" x2="23" y2="15"/>
+        </symbol>
+        <symbol id="icon-dumbbell" viewBox="0 0 24 24">
+            <path d="M6 5v14M18 5v14M6 9H4a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h2M18 9h2a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-2"/>
+        </symbol>
+        <symbol id="icon-heart" viewBox="0 0 24 24">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+        </symbol>
+    </svg>
+
+    <script>
+        const exercises = [
+            {
+                name: "Kniebeugen",
+                type: "kraft",
+                duration: 45,
+                icon: "dumbbell",
+                equipment: "Manschettengewichte (optional)",
+                target: "Beine & Po",
+                instructions: [
+                    "Füße schulterbreit aufstellen",
+                    "Gesäß nach hinten schieben wie beim Hinsetzen",
+                    "Knie nicht über Zehenspitzen",
+                    "Rücken gerade halten"
+                ]
+            },
+            {
+                name: "High Knees",
+                type: "cardio",
+                duration: 60,
+                icon: "heart",
+                equipment: "Keine",
+                target: "Herz-Kreislauf",
+                instructions: [
+                    "Im Stand die Knie abwechselnd hochziehen",
+                    "Arme wie beim Joggen mitschwingen",
+                    "Auf der Stelle bleiben",
+                    "Tempo nach Fitness anpassen"
+                ]
+            },
+            {
+                name: "Liegestütze",
+                type: "kraft",
+                duration: 45,
+                icon: "dumbbell",
+                equipment: "Keine",
+                target: "Brust & Arme",
+                instructions: [
+                    "Starte in Liegestützposition, Hände schulterbreit",
+                    "Senke den Körper ab, bis die Brust fast den Boden berührt",
+                    "Arme durchstrecken, zurück in Ausgangsposition",
+                    "Körper gerade halten, Bauch anspannen"
+                ]
+            },
+            {
+                name: "Mountain Climbers",
+                type: "cardio",
+                duration: 60,
+                icon: "heart",
+                equipment: "Keine",
+                target: "Herz-Kreislauf & Core",
+                instructions: [
+                    "Liegestützposition einnehmen",
+                    "Knie abwechselnd zur Brust ziehen",
+                    "Schnelles Tempo halten",
+                    "Hüfte nicht hochnehmen"
+                ]
+            },
+            {
+                name: "Bizeps-Curls",
+                type: "kraft",
+                duration: 45,
+                icon: "dumbbell",
+                equipment: "Gummiband",
+                target: "Arme",
+                instructions: [
+                    "Gummiband unter die Füße klemmen",
+                    "Ellbogen nah am Körper halten",
+                    "Unterarme nach oben ziehen",
+                    "Langsam wieder ablassen"
+                ]
+            },
+            {
+                name: "Hampelmann",
+                type: "cardio",
+                duration: 60,
+                icon: "heart",
+                equipment: "Keine",
+                target: "Herz-Kreislauf",
+                instructions: [
+                    "Start: Füße zusammen, Arme seitlich",
+                    "Sprung: Beine auseinander, Arme über Kopf",
+                    "Sprung zurück in Ausgangsposition",
+                    "Rhythmisch weitermachen"
+                ]
+            }
+        ];
+
+        class CircuitTimer {
+            constructor() {
+                this.currentExercise = 0;
+                this.rounds = 0;
+                this.isActive = false;
+                this.timeLeft = 10;
+                this.phase = 'prepare';
+                this.soundEnabled = true;
+                this.audioContext = null;
+
+                // DOM Elements
+                this.elements = {
+                    progressBar: document.getElementById('progressBar'),
+                    roundCounter: document.getElementById('roundCounter'),
+                    exerciseName: document.getElementById('exerciseName'),
+                    exerciseTarget: document.getElementById('exerciseTarget'),
+                    exerciseIcon: document.getElementById('exerciseIcon'),
+                    timeDisplay: document.getElementById('timeDisplay'),
+                    phaseDisplay: document.getElementById('phaseDisplay'),
+                    instructions: document.getElementById('instructions'),
+                    startButton: document.getElementById('startButton'),
+                    buttonText: document.getElementById('buttonText'),
+                    playIcon: document.getElementById('playIcon'),
+                    resetButton: document.getElementById('resetButton'),
+                    exerciseType: document.getElementById('exerciseType'),
+                    exerciseCard: document.getElementById('exerciseCard'),
+                    soundToggle: document.getElementById('soundToggle'),
+                    soundIcon: document.getElementById('soundIcon')
+                };
+
+                // Event Listeners
+                this.elements.startButton.addEventListener('click', () => this.toggleTimer());
+                this.elements.resetButton.addEventListener('click', () => this.resetTraining());
+                this.elements.soundToggle.addEventListener('click', () => this.toggleSound());
+
+                this.updateDisplay();
+            }
+
+            initAudioContext() {
+                if (!this.audioContext) {
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                return this.audioContext;
+            }
+
+            playBeep(frequency = 440, duration = 200, volume = 0.1) {
+                if (!this.soundEnabled) return;
+                
+                try {
+                    const audioContext = this.initAudioContext();
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    gainNode.gain.value = volume;
+                    oscillator.frequency.value = frequency;
+                    oscillator.type = 'sine';
+                    
+                    oscillator.start();
+                    setTimeout(() => oscillator.stop(), duration);
+                } catch (error) {
+                    console.error('Audio error:', error);
+                }
+            }
+
+            toggleSound() {
+                this.soundEnabled = !this.soundEnabled;
+                this.elements.soundIcon.setAttribute('href', 
+                    this.soundEnabled ? '#icon-volume-2' : '#icon-volume-x');
+                if (this.soundEnabled) {
+                    this.playBeep(440, 100, 0.1);
+                }
+            }
+
+            formatTime(seconds) {
+                const mins = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                return `${mins}:${secs.toString().padStart(2, '0')}`;
+            }
+
+            updateDisplay() {
+                const exercise = exercises[this.currentExercise];
+                
+                // Update progress bar
+                this.elements.progressBar.style.backgroundColor = 
+                    this.phase === 'prepare' ? '#fbbf24' :
+                    exercise.type === 'kraft' ? '#3b82f6' : '#ef4444';
+
+                // Update exercise card background
+                this.elements.exerciseCard.style.backgroundColor = 
+                    this.phase === 'prepare' ? '#fef3c7' :
+                    exercise.type === 'kraft' ? '#eff6ff' : '#fef2f2';
+
+                // Update texts
+                this.elements.roundCounter.textContent = this.rounds + 1;
+                this.elements.exerciseName.textContent = exercise.name;
+                this.elements.exerciseTarget.textContent = exercise.target;
+                this.elements.timeDisplay.textContent = this.formatTime(this.timeLeft);
+                this.elements.phaseDisplay.textContent = this.phase === 'prepare' ? 'Vorbereitung' : 'Übung';
+                
+                // Update exercise type
+                this.elements.exerciseType.textContent = 
+                    `${exercise.type === 'kraft' ? '45s Kraft' : '60s Cardio'}`;
+
+                // Update icon
+                this.elements.exerciseIcon.innerHTML = `
+                    <svg class="icon" style="color: ${exercise.type === 'kraft' ? '#3b82f6' : '#ef4444'}">
+                        <use href="#icon-${exercise.icon}"/>
+                    </svg>
+                `;
+
+                // Update instructions
+                this.elements.instructions.innerHTML = exercise.instructions
+                    .map(instruction => `<div class="instruction">${instruction}</div>`)
+                    .join('');
+
+                // Update button
+                this.elements.buttonText.textContent = this.isActive ? 'Pause' : 'Start';
+                this.elements.playIcon.setAttribute('href', 
+                    this.isActive ? '#icon-pause' : '#icon-play');
+                this.elements.startButton.style.backgroundColor = 
+                    this.isActive ? '#eab308' : '#22c55e';
+            }
+
+            nextPhase() {
+                if (this.phase === 'prepare') {
+                    this.phase = 'exercise';
+                    this.timeLeft = exercises[this.currentExercise].duration;
+                    this.playBeep(660, 200, 0.1);
+                } else {
+                    if (this.currentExercise === exercises.length - 1) {
+                        this.currentExercise = 0;
+                        this.rounds++;
+                        this.playBeep(880, 400, 0.1);
+                    } else {
+                        this.currentExercise++;
+                    }
+                    this.phase = 'prepare';
+                    this.timeLeft = 10;
+                    this.playBeep(440, 200, 0.1);
+                }
+                this.updateDisplay();
+            }
+
+            toggleTimer() {
+                this.isActive = !this.isActive;
+                if (this.isActive) {
+                    this.initAudioContext();
+                    this.playBeep(550, 100, 0.1);
+                    this.startTimer();
+                }
+                this.updateDisplay();
+            }
+
+            startTimer() {
+                if (!this.isActive) return;
+                
+                if (this.timeLeft > 0) {
+                    setTimeout(() => {
+                        if (this.isActive) {
+                            this.timeLeft--;
+                            if (this.timeLeft <= 3 && this.timeLeft > 0) {
+                                this.playBeep(440, 100, 0.05);
+                            }
+                            this.updateDisplay();
+                            this.startTimer();
+                        }
+                    }, 1000);
+                } else {
+                    this.nextPhase();
+                    this.startTimer();
+                }
+            }
+
+            resetTraining() {
+                this.currentExercise = 0;
+                this.rounds = 0;
+                this.isActive = false;
+                this.phase = 'prepare';
+                this.timeLeft = 10;
+                this.playBeep(330, 200, 0.1);
+                this.updateDisplay();
+            }
+        }
+
+        // Start the app
+        document.addEventListener('DOMContentLoaded', () => {
+            const circuit = new CircuitTimer();
+        });
+    </script>
+</body>
+</html>
